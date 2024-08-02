@@ -142,6 +142,7 @@ var ngramTypeConfig = {
         this.correctLetterSound = new Audio('./media/sounds/click.mp3');
         this.incorrectLetterSound = new Audio('./media/sounds/clack.mp3');
         this.incorrectPhraseSound = new Audio('./media/sounds/failed.mp3');
+        this.tooslowPhraseSound = new Audio('./media/sounds/tooslow.mp3');
         this.correctPhraseSound = new Audio('./media/sounds/ding.wav');
         this.currentPlayingSound = null;
     },
@@ -230,6 +231,7 @@ var ngramTypeConfig = {
             if (
                 this.currentPlayingSound == this.correctPhraseSound
                 || this.currentPlayingSound == this.incorrectPhraseSound
+                || this.currentPlayingSound == this.tooslowPhraseSound
             ) {
                 return;
             }
@@ -351,7 +353,18 @@ var ngramTypeConfig = {
                 var dataSource = this.dataSource;
                 if (
                     this.rawWPM < dataSource.minimumWPM
-                    || this.accuracy < dataSource.minimumAccuracy
+                ) {
+                    if (this.data.soundFailedThresholdEnabled) {
+                        this.stopCurrentPlayingSound();
+                        this.tooslowPhraseSound.play();
+                        this.currentPlayingSound = this.tooslowPhraseSound;
+                    }
+                    this.resetCurrentPhraseMetrics();
+                    this.pauseTimer()
+                    return;
+                }
+                if (
+                    this.accuracy < dataSource.minimumAccuracy
                 ) {
                     if (this.data.soundFailedThresholdEnabled) {
                         this.stopCurrentPlayingSound();
