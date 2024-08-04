@@ -34,6 +34,7 @@
     <script src="./ngrams/trigrams.js"></script>
     <script src="./ngrams/tetragrams.js"></script>
     <script src="./ngrams/words.js"></script>
+    <script src="./ngrams/wrongs.js"></script>
 
     <!-- VueJS -->
     <!-- Should use the development/unminified version so that the Vue DevTools could be used. -->
@@ -181,6 +182,17 @@
                             Custom
                         </a>
                         </label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input
+                            type="radio"
+                            class="custom-control-input"
+                            id="wrong-s"
+                            name="source-radio-group"
+                            value="wrongs"
+                            v-model="data.source"
+                        >
+                        <label class="custom-control-label" for="wrong-s">Wrongs</label>
                     </div>
                 </div>
             </fieldset>

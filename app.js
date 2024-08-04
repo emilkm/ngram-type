@@ -12,6 +12,7 @@ var ngramTypeConfig = {
             tetragrams: tetragrams,
             words: words,
             custom_words: null,
+            wrongs: wrongs,
 
             data: {
                 source: 'bigrams',
@@ -61,6 +62,16 @@ var ngramTypeConfig = {
                 },
                 custom_words: {
                     scope: null,
+                    combination: 2,
+                    repetition: 3,
+                    minimumWPM: 40,
+                    minimumAccuracy: 100,
+                    WPMs: [],
+                    phrases: {},
+                    phrasesCurrentIndex: 0,
+                },
+                wrongs: {
+                    scope: 50,
                     combination: 2,
                     repetition: 3,
                     minimumWPM: 40,
@@ -124,7 +135,6 @@ var ngramTypeConfig = {
                 this.expectedPhrase = dataSource.phrases[dataSource.phrasesCurrentIndex];
             }
         }
-
         else {
             this.refreshPhrases();
             this.updateDataVersion()
@@ -155,7 +165,6 @@ var ngramTypeConfig = {
             if ($.isEmptyObject(dataSource.phrases)) {
                 this.refreshPhrases();
             }
-
             else {
                 this.expectedPhrase = dataSource.phrases[dataSource.phrasesCurrentIndex];
                 // Save state in case of page reload.
@@ -264,13 +273,17 @@ var ngramTypeConfig = {
         generatePhrases: function(numberOfItemsToCombine, repetitions) {
             var dataSource = this.data['source'];
             var source = this[dataSource];
-            var scope = this.data[dataSource].scope
+            var scope = this.data[dataSource].scope;
 
             // Use indexing to limit scope of Ngrams.
             // Select the Top 50/100/150/200.
             // `Custom` has no scope.
             if (scope) {
-                source = source.slice(0, scope)
+                if (dataSource == 'wrongs') {
+                    source = Object.keys(source).sort((a, b) => a[1] - b[1]).slice(0, scope);
+                } else {
+                    source = source.slice(0, scope);
+                }
             }
 
             var ngrams = this.deepCopy(source);
@@ -291,7 +304,7 @@ var ngramTypeConfig = {
                 ngrams.splice(0, numberOfItemsToCombine);
             }
 
-            return phrases
+            return phrases;
         },
         pauseTimer: function(e) {
             var isStopped = $('.timer').countimer('stopped');
@@ -420,6 +433,16 @@ var ngramTypeConfig = {
               }
             }
             this.currentWordIndex = currentWordIndex;
+
+            if (!this.isInputCorrect) {
+                const wrongs = this['wrongs'];
+                let expectedWord = expectedWords[currentWordIndex];
+                if (expectedWord in wrongs) {
+                    wrongs[expectedWord]++;
+                } else {
+                    wrongs[expectedWord] = 1;
+                }
+            } 
         },
         resetCurrentPhraseMetrics: function() {
             this.hitsCorrect = 0;
